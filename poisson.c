@@ -78,8 +78,6 @@ int main(int argc, char **argv) {
 	int np = m/nprocs + (offset > rank ? 1 : 0);
 	int tag = 1;
 	
-	//Allocate partial v for each process. Note that this result in one
-	//redundant element on some of the processes in the case where n%procs != 0
 	double **b_p = mk_2D_array(np, m);
 	double **bt_p = mk_2D_array(np, m);
 	
