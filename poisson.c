@@ -21,7 +21,7 @@
 #define true 1
 #define false 0
 typedef int bool;
-enum rhsTypes {RHS_TYPE_POLYNOMIAL=1, RHS_TYPE_SINE=2, RHS_TYPE_CONSTANT=3, RHS_TYPE_POINTSOURCES=4};
+enum rhsTypes {RHS_TYPE_POLYNOMIAL=1, RHS_TYPE_SINE=2, RHS_TYPE_CONST=3, RHS_TYPE_POINTSOURCES=4};
 
 // Function prototypes
 double *mk_1D_array(int n);
@@ -199,11 +199,11 @@ double rhs(double x, double y, int rhsType, int n) {
 		return 1.0;
 	else if (rhsType == RHS_TYPE_POINTSOURCES){
 		if (x == 0.5 && y == 0.5 || x == 0.75 && y == 0.75)
-			f = n*n;
+			return n*n;
 		else if (x == 0.25 && y == 0.5)
-			f = -2*n*n;
+			return -2*n*n;
 		else
-			f = 0.0;
+			return 0.0;
 	} else
 		exit(EXIT_FAILURE);
 		
