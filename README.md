@@ -1,18 +1,18 @@
 # TMA4280project
 The program is compiled by running
 
-> bash compileProgram.sh
+bash compileProgram.sh
 
 Usage for poisson program:
 
 
-> Usage:
->   ./poisson k, rhsType, postProcessing, computeError
-> Arguments:
->   k: the problem size n=2^k
->   rhsType: choose from 0 to 3
->   postProcessing: 0 or 1
->   computeError: 0 or 1
+Usage:
+  ./poisson k, rhsType, postProcessing, computeError
+Arguments:
+  k: the problem size n=2^k
+  rhsType: choose from 0 to 3
+  postProcessing: 0 or 1
+  computeError: 0 or 1
 
 
 The poisson program is implemented with four rhs types. The different choises
