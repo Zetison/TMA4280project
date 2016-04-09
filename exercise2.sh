@@ -1,7 +1,7 @@
 #! /bin/sh
 
 mkdir -p results
-rhsType=2
+rhsType=1
 k=12
 for t in 1 2 4 8 16; do
 	filename="results/exercise2_k"$k"_t"$t".txt"
@@ -11,7 +11,7 @@ for t in 1 2 4 8 16; do
 
 	for P in 1 2 4 8 16; do
 		export OMP_NUM_THREADS=$t
-		mpiexec -n $P ./build/poisson $k $rhsType 0 > temp.txt
+		mpiexec -n $P ./build/poisson $k $rhsType 0 0 > temp.txt
 		tempString="$(sed -n 1,1p temp.txt)"
 		tempString="${tempString##* }"
 		tempString=$P" "$tempString"\n"

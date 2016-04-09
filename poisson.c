@@ -21,7 +21,7 @@
 #define true 1
 #define false 0
 typedef int bool;
-enum rhsTypes {RHS_TYPE_POLYNOMIAL=1, RHS_TYPE_SINE=2, RHS_TYPE_CONST=3, RHS_TYPE_POINTSOURCES=4};
+enum rhsTypes {RHS_TYPE_POLYNOMIAL, RHS_TYPE_SINE, RHS_TYPE_CONST, RHS_TYPE_POINTSOURCES};
 
 // Function prototypes
 double *mk_1D_array(int n);
@@ -48,14 +48,15 @@ int main(int argc, char **argv) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 
-	if (argc < 4) {
+	if (argc < 5) {
 		if (rank == 0) {
 			printf("Usage:\n");
-			printf("  ./poisson k, rhsType, postProcessing\n\n");
+			printf("  ./poisson k, rhsType, postProcessing, computeError\n\n");
 			printf("Arguments:\n");
 			printf("  k: the problem size n=2^k\n");
-			printf("  rhsType: choose from 1 to 4\n");
-			printf("  postProcessing: 0 or 1\n\n");
+			printf("  rhsType: choose from 0 to 3\n");
+			printf("  postProcessing: 0 or 1\n");
+			printf("  computeError: 0 or 1\n\n");
 		}
 		MPI_Finalize();
 
@@ -64,6 +65,8 @@ int main(int argc, char **argv) {
 
 	int rhsType = atoi(argv[2]);
 	bool postProcessing = atoi(argv[3]);
+	bool computeError = atoi(argv[4]);
+
 	// The number of grid points in each direction is n+1
 	// The number of degrees of freedom in each direction is n-1
 	int n = 1 << atoi(argv[1]);
@@ -140,17 +143,17 @@ int main(int argc, char **argv) {
 	end_time = MPI_Wtime();
 	total_time = end_time-start_time;
 	
-	if (postProcessing)
-		print_matrix_to_file(b_p, np, m, rank, nprocs, rhsType);
-
 	if (rank == 0)
 		printf("Time elapsed: %e\n", total_time);
 
-	if (rhsType < 5) {
-		double maxRelativeerror = compute_max_relative_error(b_p, rank, m, np, nprocs, grid, rhsType);
+	if (postProcessing)
+		print_matrix_to_file(b_p, np, m, rank, nprocs, rhsType);
+
+	if (computeError) {
+		double maxRelativeError = compute_max_relative_error(b_p, rank, m, np, nprocs, grid, rhsType);
 		if (rank == 0) {
-			printf("\n%21s%21s\n", "h", "maxRelativeerror");
-			printf("%21.17f%21.17f\n", h, maxRelativeerror);
+			printf("\n%21s%21s\n", "h", "maxRelativeError");
+			printf("%21.17f%21.17f\n", h, maxRelativeError);
 		}
 	}
 	
@@ -167,7 +170,6 @@ double **mk_2D_array(int n1, int n2) {
 	double **ret = (double **)malloc(n1 * sizeof(double *));
 	
 	ret[0] = (double *)malloc(n1 * n2 * sizeof(double));
-   
 
 	for (int i = 1; i < n1; i++)
 		ret[i] = ret[i-1] + n2;
@@ -179,7 +181,6 @@ double complex **mk_2D_array_complex(int n1, int n2) {
 	
 	ret[0] = (double complex*)malloc(n1 * n2 * sizeof(double complex));
    
-
 	for (int i = 1; i < n1; i++)
 		ret[i] = ret[i-1] + n2;
 	return ret;
