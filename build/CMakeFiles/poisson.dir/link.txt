@@ -1,1 +1,0 @@
-/usr/bin/mpicc  -std=c99  -fopenmp -O3 -DNDEBUG    CMakeFiles/poisson.dir/poisson.c.o  -o poisson -rdynamic -lm -lmpi -ldl -lhwloc 
