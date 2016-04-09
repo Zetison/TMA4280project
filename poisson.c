@@ -28,10 +28,10 @@ double **mk_2D_array(int n1, int n2);
 double complex **mk_2D_array_complex(int n1, int n2);
 int loc_to_glob(int i, int rank, int m, int nprocs);
 double rhs(double x, double y, int rhsType, int n);
-double exactSol(double x, double y, int rhsType);
-void transpose_wMPI(double **A, double **At, int np, int m, int nprocs);
-double computeMaxRelativeError(double **b, int rank, int m, int np, int nprocs, double *grid, int rhsType);
-void print_matrix_wMPI(double **A, int np, int m, int rank, int nprocs, int rhsType);
+double exact_solution(double x, double y, int rhsType);
+void transpose(double **A, double **At, int np, int m, int nprocs);
+double compute_max_relative_error(double **b, int rank, int m, int np, int nprocs, double *grid, int rhsType);
+void print_matrix_to_file(double **A, int np, int m, int rank, int nprocs, int rhsType);
 void fft(double complex *z, int m);
 void fast_sine(double *v, int n, double complex *z, bool inverse);
 void fstinv(double *v, int n, double complex *z);
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 
 
 	if (argc < 4) {
-		if(rank == 0) {
+		if (rank == 0) {
 			printf("Usage:\n");
 			printf("  ./poisson k, rhsType, postProcessing\n\n");
 			printf("Arguments:\n");
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < np; i++)
 		fst(b_p[i], n, z[omp_get_thread_num()]);
 
-	transpose_wMPI(b_p, bt_p, np, m, nprocs);
+	transpose(b_p, bt_p, np, m, nprocs);
 
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < np; i++)
@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < np; i++)
 		fst(bt_p[i], n, z[omp_get_thread_num()]);
 
-	transpose_wMPI(bt_p, b_p, np, m, nprocs);
+	transpose(bt_p, b_p, np, m, nprocs);
 
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < np; i++)
@@ -139,17 +139,17 @@ int main(int argc, char **argv) {
 	end_time = MPI_Wtime();
 	total_time = end_time-start_time;
 	
-	if(postProcessing)
-		print_matrix_wMPI(b_p, np, m, rank, nprocs, rhsType);
+	if (postProcessing)
+		print_matrix_to_file(b_p, np, m, rank, nprocs, rhsType);
 
-	if(rank == 0)
+	if (rank == 0)
 		printf("Time elapsed: %e\n", total_time);
 
-	if(rhsType < 5) {
-		double maxRelativeError = computeMaxRelativeError(b_p, rank, m, np, nprocs, grid, rhsType);
-		if(rank == 0) {
-			printf("\n%21s%21s\n", "h", "maxRelativeError");
-			printf("%21.17f%21.17f\n", h, maxRelativeError);
+	if (rhsType < 5) {
+		double maxRelativeerror = compute_max_relative_error(b_p, rank, m, np, nprocs, grid, rhsType);
+		if (rank == 0) {
+			printf("\n%21s%21s\n", "h", "maxRelativeerror");
+			printf("%21.17f%21.17f\n", h, maxRelativeerror);
 		}
 	}
 	
@@ -190,51 +190,58 @@ int loc_to_glob(int i, int rank, int m, int nprocs) {
 }
 
 double rhs(double x, double y, int rhsType, int n) {
+	double f;
 	switch(rhsType) {
 		case 1:
-			return 2 * (y - y*y + x - x*x);
+			f = 2 * (y - y*y + x - x*x);
+			break;
 		case 2:
-			return 5*PI*PI*sin(PI*x)*sin(2*PI*y);
+			f = 5*PI*PI*sin(PI*x)*sin(2*PI*y);
+			break;
 		case 3:
-			return 1.0;
+			f = 1.0;
+			break;
 		case 4:
-			if(x == 0.5 && y == 0.5 || x == 0.75 && y == 0.75)
-				return n*n;
-			else if(x == 0.25 && y == 0.5)
-				return -2*n*n;
+			if (x == 0.5 && y == 0.5 || x == 0.75 && y == 0.75)
+				f = n*n;
+			else if (x == 0.25 && y == 0.5)
+				f = -2*n*n;
 			else
-				return 0.0;
-		case 5: {
-			double a = 3, b = 10, c = 18, d = 14;
-			return tan(PI/4*(sin(a*(sin(c*sqrt(x+y*y))+0.01)) + cos(b*(sin(d*y)+0.01))));
-		}
+				f = 0.0;
+			break;
 	}
+	return f;
 }
 
-double exactSol(double x, double y, int rhsType) {
+double exact_solution(double x, double y, int rhsType) {
+	double u;
 	switch(rhsType) {
 		case 1:
-			return x*(x-1)*y*(y-1);
+			u = x*(x-1)*y*(y-1);
+			break;
 		case 2:
-			return sin(PI*x)*sin(2*PI*y);
-		default : {
-			if(rhsType > 4)
+			u = sin(PI*x)*sin(2*PI*y);
+			break;
+		case 3:
+		case 4:
+			if (rhsType > 4)
 				exit(EXIT_FAILURE);
-			else if(rhsType == 4 && ((x == 0.5 && y == 0.5) || (x == 0.75 && y == 0.75) || (x == 0.25 && y == 0.5)))
-				return NAN;
+			else if (rhsType == 4 && ((x == 0.5 && y == 0.5) || (x == 0.75 && y == 0.75) || (x == 0.25 && y == 0.5)))
+				u = NAN;
 	
-			double u = 0, ratio;
+			double ratio;
+			u = 0;
 			#pragma omp parallel for reduction(+:u) 
 			for (int N = 0; N < 1000; N++) {
 				double maxTerm = 0, a_mn;
 				int n = N;
 				for (int m = 0; m <= N; m++) {
 					double fact_x, fact_y;
-					if(rhsType == 3) {
+					if (rhsType == 3) {
 						fact_x = (2*m+1)*PI;
 						fact_y = (2*n+1)*PI;
 						a_mn = 4/PI/PI/(4*m*n+2*m+2*n+1);
-					} else if(rhsType == 4) {
+					} else if (rhsType == 4) {
 						fact_x = (m+1)*PI;
 						fact_y = (n+1)*PI;
 						double Q[3] = {1, 1, -2};
@@ -252,13 +259,12 @@ double exactSol(double x, double y, int rhsType) {
 					n--;
 				}
 			}
-			
-			return u;
-		}
+			break;
 	}
+	return u;
 }
 
-void transpose_wMPI(double **A, double **At, int np, int m, int nprocs) {
+void transpose(double **A, double **At, int np, int m, int nprocs) {
 	int offset = m%nprocs;
 	double *recvbuf = mk_1D_array(np*m);
 	double *sendbuf = mk_1D_array(np*m);
@@ -288,34 +294,34 @@ void transpose_wMPI(double **A, double **At, int np, int m, int nprocs) {
 	}
 }
 
-double computeMaxRelativeError(double **b, int rank, int m, int np, int nprocs, double *grid, int rhsType) {
+double compute_max_relative_error(double **b, int rank, int m, int np, int nprocs, double *grid, int rhsType) {
 	double max_u = -1;
-	double max_Error = -1;
+	double max_error = -1;
 
 	for (int i = 0; i < np; i++) {
 		int i_glob = loc_to_glob(i, rank, m, nprocs);
 		for (int j = 0; j < m; j++) {
-			double u = exactSol(grid[i_glob+1], grid[j+1], rhsType);
-			if(max_u < fabs(u))
+			double u = exact_solution(grid[i_glob+1], grid[j+1], rhsType);
+			if (max_u < fabs(u))
 				max_u = fabs(u);
-			double Error;
-			if(isnan(u))
-				Error = 0;
+			double error;
+			if (isnan(u))
+				error = 0;
 			else
-				Error = fabs(u-b[i][j]);
-			if(max_Error < Error)
-				max_Error = Error;
+				error = fabs(u-b[i][j]);
+			if (max_error < error)
+				max_error = error;
 		}
 	}
-	double global_max_Error, global_max_u;
+	double global_max_error, global_max_u;
 
-	MPI_Reduce(&max_Error, &global_max_Error, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&max_error, &global_max_error, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 	MPI_Reduce(&max_u, &global_max_u, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
-	return global_max_Error/global_max_u;
+	return global_max_error/global_max_u;
 }
 
-void print_matrix(double **A, int np, int m, int rank, FILE *fp) {
+void print_matrix(double **A, int np, int m, FILE *fp) {
 	for (int i = 0; i < np; i++) {
 		for (int j = 0; j < m; j++)
 			fprintf(fp, "%20.15g ", A[i][j]);
@@ -323,19 +329,19 @@ void print_matrix(double **A, int np, int m, int rank, FILE *fp) {
 	}
 }
 
-void print_matrix_wMPI(double **A, int np, int m, int rank, int nprocs, int rhsType) {
+void print_matrix_to_file(double **A, int np, int m, int rank, int nprocs, int rhsType) {
 	int offset = m%nprocs;
 	int tag = 1;
 	MPI_Status status;
 
-	if(rank == 0) {
+	if (rank == 0) {
 		FILE *fp;
 
 		char fileName[80];
 		sprintf(fileName, "../postProcessing/rhs%d_m%d.dat", rhsType, m);
 		fp = fopen(fileName, "w+");
 
-		print_matrix(A, np, m, rank, fp);
+		print_matrix(A, np, m, fp);
 		
 		for (int k = 1; k < nprocs; k++) {
 			int np_k = m/nprocs + (offset > k ? 1 : 0);
@@ -345,7 +351,7 @@ void print_matrix_wMPI(double **A, int np, int m, int rank, int nprocs, int rhsT
 			for (int i = 0; i < np_k; i++)
 				for (int j = 0; j < m; j++)
 					A_k[i][j] = recvbuf[i*m+j];
-			print_matrix(A_k, np_k, m, k, fp);
+			print_matrix(A_k, np_k, m, fp);
 		}
 		fclose(fp);
 	} else {
@@ -396,7 +402,6 @@ void fft(double complex *z, int m) {
 }
 
 void fast_sine(double *v, int n, double complex *z, bool inverse) {
-//	double complex *z = malloc(2*n * sizeof(double complex));
 	int kk = 0;
 	z[kk++] = 0;
 	for (int k = 0; k < n - 1; k++)
@@ -417,7 +422,6 @@ void fast_sine(double *v, int n, double complex *z, bool inverse) {
 	if (inverse)
 		for (int i = 0; i < n - 1; i++)
 			v[i] = (2.0*v[i]) / n;
-//	free(z);
 }
 
 void fstinv(double *v, int n, double complex *z) {
