@@ -8,7 +8,7 @@ t=2
 for k in `seq $k_start $k_end`; do
 	P=1
 	export OMP_NUM_THREADS=$t
-	mpiexec -n $P ./build/poisson $k $rhsType 0 > temp.txt
+	mpiexec -n $P ./build/poisson $k $rhsType 0 0 > temp.txt
 
 	tempString="$(sed -n 1,1p temp.txt)"
 	initialTime="${tempString##* }"

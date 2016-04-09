@@ -4,7 +4,6 @@ mkdir -p results
 rhsType=1
 k_start=10
 k_end=14
-t=2
 for k in `seq $k_start $k_end`; do
 
 	tempString="P time\n"
@@ -12,7 +11,7 @@ for k in `seq $k_start $k_end`; do
 	printf "$tempString"
 	printf "$tempString" > $filename
 	
-	arr=(1 2 3 6 9 18)
+	arr=(1 2 3 4 6 9 12 18 36)
 	N_arr=${#arr[@]}
 	for i in `seq 1 $N_arr`; do
 		P=${arr[$[i-1]]}

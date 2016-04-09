@@ -319,11 +319,11 @@ void print_matrix(double **A, int np, int m, FILE *fp) {
 }
 
 void print_matrix_to_file(double **A, int np, int m, int rank, int nprocs, int rhsType) {
-	int offset = m%nprocs;
 	int tag = 1;
-	MPI_Status status;
 
 	if (rank == 0) {
+		MPI_Status status;
+		int offset = m%nprocs;
 		FILE *fp;
 
 		char fileName[80];
