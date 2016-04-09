@@ -18,7 +18,7 @@ for k in `seq $k_start $k_end`; do
 		t=${arr[$[N_arr-i]]}
 	
 		export OMP_NUM_THREADS=$t
-		mpiexec -n $P ./build/poisson $k $rhsType 0 0 > temp.txt
+		mpiexec_mpt -n $P ./build/poisson $k $rhsType 0 0 > temp.txt
 		tempString="$(sed -n 1,1p temp.txt)"
 		tempString="${tempString##* }"
 		tempString=$P" "$tempString"\n"
