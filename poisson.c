@@ -21,6 +21,7 @@
 #define true 1
 #define false 0
 typedef int bool;
+enum rhsTypes {RHS_TYPE_POLYNOMIAL=1, RHS_TYPE_SINE=2, RHS_TYPE_CONSTANT=3, RHS_TYPE_POINTSOURCES=4};
 
 // Function prototypes
 double *mk_1D_array(int n);
@@ -190,79 +191,68 @@ int loc_to_glob(int i, int rank, int m, int nprocs) {
 }
 
 double rhs(double x, double y, int rhsType, int n) {
-	double f;
-	switch(rhsType) {
-		case 1:
-			f = 2 * (y - y*y + x - x*x);
-			break;
-		case 2:
-			f = 5*PI*PI*sin(PI*x)*sin(2*PI*y);
-			break;
-		case 3:
-			f = 1.0;
-			break;
-		case 4:
-			if (x == 0.5 && y == 0.5 || x == 0.75 && y == 0.75)
-				f = n*n;
-			else if (x == 0.25 && y == 0.5)
-				f = -2*n*n;
-			else
-				f = 0.0;
-			break;
-	}
-	return f;
+	if (rhsType == RHS_TYPE_POLYNOMIAL)
+		return 2 * (y - y*y + x - x*x);
+	else if (rhsType == RHS_TYPE_SINE)
+		return 5*PI*PI*sin(PI*x)*sin(2*PI*y);
+	else if (rhsType == RHS_TYPE_CONST)
+		return 1.0;
+	else if (rhsType == RHS_TYPE_POINTSOURCES){
+		if (x == 0.5 && y == 0.5 || x == 0.75 && y == 0.75)
+			f = n*n;
+		else if (x == 0.25 && y == 0.5)
+			f = -2*n*n;
+		else
+			f = 0.0;
+	} else
+		exit(EXIT_FAILURE);
+		
 }
 
 double exact_solution(double x, double y, int rhsType) {
-	double u;
-	switch(rhsType) {
-		case 1:
-			u = x*(x-1)*y*(y-1);
-			break;
-		case 2:
-			u = sin(PI*x)*sin(2*PI*y);
-			break;
-		case 3:
-		case 4:
-			if (rhsType > 4)
-				exit(EXIT_FAILURE);
-			else if (rhsType == 4 && ((x == 0.5 && y == 0.5) || (x == 0.75 && y == 0.75) || (x == 0.25 && y == 0.5)))
-				u = NAN;
-	
-			double ratio;
-			u = 0;
-			#pragma omp parallel for reduction(+:u) 
-			for (int N = 0; N < 1000; N++) {
-				double maxTerm = 0, a_mn;
-				int n = N;
-				for (int m = 0; m <= N; m++) {
-					double fact_x, fact_y;
-					if (rhsType == 3) {
-						fact_x = (2*m+1)*PI;
-						fact_y = (2*n+1)*PI;
-						a_mn = 4/PI/PI/(4*m*n+2*m+2*n+1);
-					} else if (rhsType == 4) {
-						fact_x = (m+1)*PI;
-						fact_y = (n+1)*PI;
-						double Q[3] = {1, 1, -2};
-						double pts[3][2] = {{0.5, 0.5},
-								    {0.75, 0.75},
-								    {0.25, 0.5}};
-						a_mn = 0;
-						for (int i = 0; i < 3; i++)
-							a_mn += Q[i]*sin(fact_x*pts[i][0])*sin(fact_y*pts[i][1]);
-					}
-					a_mn *= 4/(fact_x*fact_x+fact_y*fact_y);
-					double uTerm = a_mn*sin(fact_x*x)*sin(fact_y*y);
+	if (rhsType == RHS_TYPE_POLYNOMIAL)
+		return x*(x-1)*y*(y-1);
+	else if (rhsType == RHS_TYPE_SINE)
+		return sin(PI*x)*sin(2*PI*y);
+	else if (rhsType == RHS_TYPE_CONST || rhsType == RHS_TYPE_POINTSOURCES) {
+		if (rhsType == RHS_TYPE_POINTSOURCES && ((x == 0.5 && y == 0.5) || (x == 0.75 && y == 0.75) || (x == 0.25 && y == 0.5)))
+			return NAN;
 
-					u += uTerm;
-					n--;
+		double ratio, u = 0;
+		#pragma omp parallel for reduction(+:u) 
+		for (int N = 0; N < 1000; N++) {
+			double maxTerm = 0, a_mn;
+			int n = N;
+			for (int m = 0; m <= N; m++) {
+				double fact_x, fact_y;
+				if (rhsType == 3) {
+					fact_x = (2*m+1)*PI;
+				fact_y = (2*n+1)*PI;
+					a_mn = 4/PI/PI/(4*m*n+2*m+2*n+1);
+				} else if (rhsType == 4) {
+					fact_x = (m+1)*PI;
+					fact_y = (n+1)*PI;
+					double Q[3] = {1, 1, -2};
+					double pts[3][2] = {{0.5, 0.5},
+							    {0.75, 0.75},
+							    {0.25, 0.5}};
+					a_mn = 0;
+					for (int i = 0; i < 3; i++)
+						a_mn += Q[i]*sin(fact_x*pts[i][0])*sin(fact_y*pts[i][1]);
 				}
+				a_mn *= 4/(fact_x*fact_x+fact_y*fact_y);
+				double uTerm = a_mn*sin(fact_x*x)*sin(fact_y*y);
+
+				u += uTerm;
+			n--;
 			}
-			break;
-	}
-	return u;
+		}
+		return u;
+	} else
+		exit(EXIT_FAILURE);
 }
+
+
 
 void transpose(double **A, double **At, int np, int m, int nprocs) {
 	int offset = m%nprocs;
