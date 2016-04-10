@@ -1,12 +1,13 @@
 #!/bin/bash
 #PBS -N poisson 
 #PBS -A ntnu603
-#PBS -l walltime=01:00:00
+#PBS -l walltime=00:30:00
 #PBS -l select=2:ncpus=32:mpiprocs=18
   
-module load mpt
- 
 cd $PBS_O_WORKDIR
+
+module load mpt
+module load intelcomp
 
 bash exercise2_convergence.sh
 echo "completed exercise2_convergence.sh"

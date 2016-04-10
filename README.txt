@@ -25,6 +25,7 @@ for rhsType is:
 It should be noted that since the implemented exact solution for rhsType 3 and 4
 is based on the infinite series representation which has limited convergence
 rate (escpecially rhsType 4), the accuracy has been limited to approximately a
-thousand terms, which only yields an accuracy of 1e-8 for rhsType 3 and 1e-4.
+thousand terms, which only yields an accuracy of 1e-8 for rhsType 3 and 1e-4
+for rhsType 4.
 
 
