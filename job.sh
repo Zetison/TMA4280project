@@ -2,7 +2,7 @@
 #PBS -N poisson 
 #PBS -A ntnu603
 #PBS -l walltime=00:30:00
-#PBS -l select=2:ncpus=32:mpiprocs=18
+#PBS -l select=2:ncpus=32:mpiprocs=18:ompthreads=36
   
 cd $PBS_O_WORKDIR
 

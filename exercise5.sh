@@ -8,4 +8,4 @@ P=18
 
 export OMP_NUM_THREADS=$t
 cd build
-mpiexec_mpt -n $P ./poisson $k $rhsType 1 0
+mpiexec_mpt -np $P omplace -nt $t ./poisson $k $rhsType 1 0

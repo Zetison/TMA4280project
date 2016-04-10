@@ -2,7 +2,7 @@
 
 mkdir -p results
 rhsType=1
-k_start=10
+k_start=5
 k_end=14
 for k in `seq $k_start $k_end`; do
 
@@ -18,7 +18,7 @@ for k in `seq $k_start $k_end`; do
 		t=${arr[$[N_arr-i]]}
 	
 		export OMP_NUM_THREADS=$t
-		mpiexec_mpt -n $P ./build/poisson $k $rhsType 0 0 > temp.txt
+		mpiexec_mpt -np $P omplace -nt $t ./build/poisson $k $rhsType 0 0 > temp.txt
 		tempString="$(sed -n 1,1p temp.txt)"
 		tempString="${tempString##* }"
 		tempString=$P" "$tempString"\n"

@@ -14,7 +14,7 @@ for t in 1 2; do
 
 	for k in `seq $k_start $k_end`; do
 		export OMP_NUM_THREADS=$t
-		mpiexec_mpt -n $P ./build/poisson $k $rhsType 0 1 > temp.txt
+		mpiexec_mpt -np $P omplace -nt $t ./build/poisson $k $rhsType 0 1 > temp.txt
 		
 		tempString="$(sed -n 4,4p temp.txt)\n"
 		printf "$tempString"
