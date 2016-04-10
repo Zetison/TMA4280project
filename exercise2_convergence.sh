@@ -4,7 +4,7 @@ mkdir -p results
 k_start=3
 k_end=14
 rhsType=1
-P=20
+P=18
 for t in 1 2; do
 	filename="results/convergence_plot.txt"
 	tempString="h maxRelativeError\n"
