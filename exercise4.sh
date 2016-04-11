@@ -4,29 +4,23 @@ mkdir -p results
 rhsType=1
 k_start=10
 k_end=14
-t=2
+t=1
+filename="results/exercise4.dat"
+printf "P\\k" > $filename
 for k in `seq $k_start $k_end`; do
-	P=1
-	export OMP_NUM_THREADS=$t
-	mpiexec_mpt -np $P omplace -nt $t ./build/poisson $k $rhsType 0 0 > temp.txt
+	printf " "$k >> $filename
+done
 
-	tempString="$(sed -n 1,1p temp.txt)"
-	initialTime="${tempString##* }"
-	echo "initialTime = "$initialTime
-	filename="results/exercise4_k"$k".txt"
-	tempString="P initialTime time\n"
-	printf "$tempString"
-	printf "$tempString" > $filename
-
-
-	for P in 2 4 8 16; do
+for P in 1 2 4 8 16; do
+	tempString="\n"$P
+	printf "$tempString" >> $filename
+	for k in `seq $k_start $k_end`; do
 		export OMP_NUM_THREADS=$t
+#mpiexec -np $P ./build/poisson $k $rhsType 0 0 > temp.txt
 		mpiexec_mpt -np $P omplace -nt $t ./build/poisson $k $rhsType 0 0 > temp.txt
-	
-		tempString="$(sed -n 1,1p temp.txt)\n"
-		tempString="${tempString##* }"
-		tempString=$P" "$initialTime" "$tempString
-		printf "$tempString"
+
+		tempString="$(sed -n 1,1p temp.txt)"
+		tempString=" ${tempString##* }"
 		printf "$tempString" >> $filename
 	done
 done
