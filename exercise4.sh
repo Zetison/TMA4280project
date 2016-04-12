@@ -15,7 +15,6 @@ for P in 1 2 4 8 16; do
 	tempString="\n"$P
 	printf "$tempString" >> $filename
 	for k in `seq $k_start $k_end`; do
-		export OMP_NUM_THREADS=$t
 #mpiexec -np $P ./build/poisson $k $rhsType 0 0 > temp.txt
 		mpiexec_mpt -np $P omplace -nt $t ./build/poisson $k $rhsType 0 0 > temp.txt
 

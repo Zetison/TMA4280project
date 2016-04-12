@@ -2,13 +2,12 @@
 #PBS -N poisson 
 #PBS -A ntnu603
 #PBS -l walltime=00:00:09
-#PBS -l select=2:ncpus=32:mpiprocs=18:ompthreads=1
-  
-cd $PBS_O_WORKDIR
-
+#PBS -l select=1:ncpus=32:mpiprocs=4:ompthreads=4
+ 
 module load mpt
 module load intelcomp
+ 
+cd $PBS_O_WORKDIR
 
-mpiexec_mpt -np 1 omplace -nt 2 ./build/poisson 7 0 0 0
+mpiexec_mpt -n 4 omplace -nt 4 ./build/poisson 9 0 0 0
 
-mpiexec_mpt -np 1 omplace -nt 4 ./build/poisson 7 0 0 0
