@@ -316,17 +316,17 @@ double compute_max_relative_error(double **b, int rank, int m, int np, int nproc
 	return global_max_error/global_max_u;
 }
 
-void print_matrix(double **A, int np, int m, FILE *fp) {
+void print_matrix(double *A, int np, int m, FILE *fp) {
 	for (int i = 0; i < np; i++) {
 		for (int j = 0; j < m; j++)
-			fprintf(fp, "%20.15g ", A[i][j]);
+			fprintf(fp, "%20.15g ", A[i*m+j]);
 		fprintf(fp, "\n");
 	}
 }
 
 void print_matrix_to_file(double **A, int np, int m, int rank, int nprocs, int rhsType) {
 	int tag = 1;
-
+	
 	if (rank == 0) {
 		MPI_Status status;
 		int offset = m%nprocs;
@@ -336,26 +336,18 @@ void print_matrix_to_file(double **A, int np, int m, int rank, int nprocs, int r
 		sprintf(fileName, "../postProcessing/rhs%d_m%d.dat", rhsType, m);
 		fp = fopen(fileName, "w+");
 
-		print_matrix(A, np, m, fp);
-		
+		print_matrix(A[0], np, m, fp);
+		int np_max = m/nprocs + 1;
+		double *A_k = mk_1D_array(np_max*m);
 		for (int k = 1; k < nprocs; k++) {
 			int np_k = m/nprocs + (offset > k ? 1 : 0);
-			double *recvbuf = mk_1D_array(np_k*m);
-			MPI_Recv(recvbuf, np_k*m, MPI_DOUBLE, k, tag, MPI_COMM_WORLD, &status);
-			double **A_k = mk_2D_array(np_k, m);
-			for (int i = 0; i < np_k; i++)
-				for (int j = 0; j < m; j++)
-					A_k[i][j] = recvbuf[i*m+j];
+			MPI_Recv(A_k, np_k*m, MPI_DOUBLE, k, tag, MPI_COMM_WORLD, &status);
 			print_matrix(A_k, np_k, m, fp);
 		}
+		free(A_k);
 		fclose(fp);
-	} else {
-		double *sendbuf = mk_1D_array(np*m);
-		for (int i = 0; i < np; i++)
-			for (int j = 0; j < m; j++)
-				sendbuf[i*m+j] = A[i][j];
-		MPI_Send(sendbuf, np*m, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD);
-	}
+	} else
+		MPI_Send(A[0], np*m, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD);
 }
 
 void fft(double complex *z, int m) {
