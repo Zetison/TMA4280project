@@ -1,0 +1,11 @@
+No Prologue was run  Tue Apr 12 13:32:37 CEST 2016 
+omplace information:
+   MPI type is SGI MPI, 4 threads, thread model is intel
+   placement file /tmp/omplace.file.19394:
+    fork skip=0  exact cpu=0-6:6
+    thread oncpu=0 cpu=1,3,4 noplace=1  exact
+    thread oncpu=6 cpu=7,9,10 noplace=1  exact
+Time elapsed: 4.188108e-01
+Start Epilogue v3.0.1 Tue Apr 12 13:32:40 CEST 2016 
+clean up
+End Epilogue v3.0.1 Tue Apr 12 13:32:40 CEST 2016 

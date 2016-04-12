@@ -18,7 +18,7 @@ Arguments:
 The poisson program is implemented with four rhs types. The different choises
 for rhsType is:
 	1. f(x,y) = 2 * (y - y*y + x - x*x)
-	2. f(x,y) = 5*PI'PI*sin(PI*x)*sin(2*PI*x)
+	2. f(x,y) = 5*PI*PI*sin(PI*x)*sin(2*PI*x)
 	3. f(x,y) = 1
 	4. f(x,y) = "three point sources"
 

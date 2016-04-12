@@ -4,7 +4,7 @@ mkdir -p results
 rhsType=1
 k_start=10
 k_end=14
-t=1
+t=2
 filename="results/exercise4.dat"
 printf "P\\k" > $filename
 for k in `seq $k_start $k_end`; do
