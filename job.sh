@@ -1,8 +1,8 @@
 #!/bin/bash
 #PBS -N poisson 
 #PBS -A ntnu603
-#PBS -l walltime=00:50:00
-#PBS -l select=5:ncpus=32:mpiprocs=8:ompthreads=2
+#PBS -l walltime=00:02:00
+#PBS -l select=18:ncpus=32:mpiprocs=2:ompthreads=8
  
 module load mpt
 module load intelcomp

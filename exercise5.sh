@@ -3,8 +3,8 @@
 mkdir -p postProcessing
 rhsType=3
 k=11
-t=2
-P=18
+t=8
+P=36
 
 cd build
 mpiexec_mpt -np $P omplace -nt $t ./poisson $k $rhsType 1 0

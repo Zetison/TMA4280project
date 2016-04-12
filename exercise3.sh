@@ -13,7 +13,7 @@ for k in `seq $k_start $k_end`; do
 	
 	arr=(1 2 3 4 6 9 12 18 36)
 	N_arr=${#arr[@]}
-	for i in `seq 3 $N_arr`; do
+	for i in `seq 5 $N_arr`; do
 		P=${arr[$[i-1]]}
 		t=${arr[$[N_arr-i]]}
 	

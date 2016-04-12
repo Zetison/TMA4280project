@@ -4,8 +4,8 @@ mkdir -p results
 k_start=3
 k_end=14
 rhsType=1
-P=40
-for t in 1 2; do
+P=36
+for t in 4 8; do
 	filename="results/convergence_plot_t"$t".dat"
 	tempString="h maxRelativeError\n"
 	printf "$tempString"
