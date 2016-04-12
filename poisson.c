@@ -30,7 +30,7 @@ double complex **mk_2D_array_complex(int n1, int n2);
 int loc_to_glob(int i, int rank, int m, int nprocs);
 double rhs(double x, double y, int rhsType, int n);
 double exact_solution(double x, double y, int rhsType);
-void transpose(double **A, double **At, int np, int m, int nprocs);
+void transpose(double **A, double **At, int np, int m, int nprocs, double *recvbuf, double *sendbuf, int *sendcounts, int *sdispls, int *np_arr);
 double compute_max_relative_error(double **b, int rank, int m, int np, int nprocs, double *grid, int rhsType);
 void print_matrix_to_file(double **A, int np, int m, int rank, int nprocs, int rhsType);
 void fft(double complex *z, int m);
@@ -111,8 +111,23 @@ int main(int argc, char **argv) {
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < np; i++)
 		fst(b_p[i], n, z[omp_get_thread_num()]);
+	
+	double *recvbuf = mk_1D_array(np*m);
+	double *sendbuf = mk_1D_array(np*m);
+	int *sendcounts = (int *)malloc(nprocs * sizeof(int));
+	int *sdispls = (int *)malloc(nprocs * sizeof(int));
+	int *np_arr = (int *)malloc(nprocs * sizeof(int));
 
-	transpose(b_p, bt_p, np, m, nprocs);
+	int displs = 0;
+	for (int k = 0; k < nprocs; k++) {
+		int np_k = k < offset ? m/nprocs+1 : m/nprocs;
+		np_arr[k] = np_k;
+		sendcounts[k] = np_k*np;
+		sdispls[k] = displs;
+		displs += np_k*np;
+	}
+
+	transpose(b_p, bt_p, np, m, nprocs, recvbuf, sendbuf, sendcounts, sdispls, np_arr);
 
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < np; i++)
@@ -131,7 +146,7 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < np; i++)
 		fst(bt_p[i], n, z[omp_get_thread_num()]);
 
-	transpose(bt_p, b_p, np, m, nprocs);
+	transpose(bt_p, b_p, np, m, nprocs, recvbuf, sendbuf, sendcounts, sdispls, np_arr);
 
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < np; i++)
@@ -253,20 +268,10 @@ double exact_solution(double x, double y, int rhsType) {
 
 
 
-void transpose(double **A, double **At, int np, int m, int nprocs) {
-	int offset = m%nprocs;
-	double *recvbuf = mk_1D_array(np*m);
-	double *sendbuf = mk_1D_array(np*m);
-	int *sendcounts = (int *)malloc(nprocs * sizeof(int));
-	int *sdispls = (int *)malloc(nprocs * sizeof(int));
-
+void transpose(double **A, double **At, int np, int m, int nprocs, double *recvbuf, double *sendbuf, int *sendcounts, int *sdispls, int *np_arr) {
 	int counter = 0;
-	int displs = 0;
 	for (int k = 0; k < nprocs; k++) {
-		int np_k = k < offset ? m/nprocs+1 : m/nprocs;
-		sendcounts[k] = np_k*np;
-		sdispls[k] = displs;
-		displs += np_k*np;
+		int np_k = np_arr[k];
 		for (int i = 0; i < np; i++)
 			for (int j = 0; j < np_k; j++)
 				sendbuf[counter++] = A[i][loc_to_glob(j, k, m, nprocs)];
@@ -275,11 +280,12 @@ void transpose(double **A, double **At, int np, int m, int nprocs) {
 	
 	counter = 0;
 	for (int k = 0; k < nprocs; k++) {
-		int np_k = k < offset ? m/nprocs+1 : m/nprocs;
-
-		for (int j = 0; j < np_k; j++)
+		int np_k = np_arr[k];
+		for (int j = 0; j < np_k; j++){
+			int j_glob = loc_to_glob(j, k, m, nprocs);
 			for (int i = 0; i < np; i++)
-				At[i][loc_to_glob(j, k, m, nprocs)] = recvbuf[counter++];
+				At[i][j_glob] = recvbuf[counter++];
+		}
 	}
 }
 

@@ -1,4 +1,0 @@
-/var/spool/PBS/mom_priv/jobs/6153950.service2.SC: line 10: setenv: command not found
-/var/spool/PBS/mom_priv/jobs/6153950.service2.SC: line 11: setenv: command not found
-/var/spool/PBS/mom_priv/jobs/6153950.service2.SC: line 12: setenv: command not found
-MPI: dplace use detected, MPI_DSM_... environment variables ignored

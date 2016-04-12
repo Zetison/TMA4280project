@@ -11,7 +11,7 @@ for k in `seq $k_start $k_end`; do
 	printf " "$k >> $filename
 done
 
-for P in 1 2 4 8 16; do
+for P in 1 2 4 8 16 32; do
 	tempString="\n"$P
 	printf "$tempString" >> $filename
 	for k in `seq $k_start $k_end`; do

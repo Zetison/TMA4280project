@@ -1,6 +1,0 @@
-ModuleCmd_Load.c(199):ERROR:105: Unable to locate a modulefile for 'mpi-sgi/mpt'
-ModuleCmd_Load.c(199):ERROR:105: Unable to locate a modulefile for 'comp-intel/2015.0.090'
-/var/spool/PBS/mom_priv/jobs/6153985.service2.SC: line 10: setenv: command not found
-/var/spool/PBS/mom_priv/jobs/6153985.service2.SC: line 11: setenv: command not found
-/var/spool/PBS/mom_priv/jobs/6153985.service2.SC: line 12: setenv: command not found
-/var/spool/PBS/mom_priv/jobs/6153985.service2.SC: line 16: mpiexec_mpt: command not found
