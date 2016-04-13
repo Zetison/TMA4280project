@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < np; i++)
 		fstinv(bt_p[i], n, z[omp_get_thread_num()]);
 
-	// solve Lambda * xtilde = Btilde
+	// solve Lambda * Utilde = Btilde
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < np; i++) {
 		int i_glob = loc_to_glob(i, rank, m, nprocs);
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
 			bt_p[i][j] = bt_p[i][j] / (diag[i_glob] + diag[j]);
 	}
 
-	// Calculate x = S^-1 * (S * xtilde^T)
+	// Calculate U = S^-1 * (S * Utilde)^T
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < np; i++)
 		fst(bt_p[i], n, z[omp_get_thread_num()]);
