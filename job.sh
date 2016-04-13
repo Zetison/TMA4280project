@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N poisson 
 #PBS -A ntnu603
-#PBS -l walltime=00:02:00
+#PBS -l walltime=00:15:00
 #PBS -l select=18:ncpus=32:mpiprocs=2:ompthreads=8
  
 module load mpt
@@ -23,4 +23,3 @@ echo "completed exercise4.sh"
 
 bash exercise5.sh
 echo "completed exercise5.sh"
-
