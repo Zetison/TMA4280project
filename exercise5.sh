@@ -7,4 +7,4 @@ t=8
 P=36
 
 cd build
-mpiexec_mpt -np $P omplace -nt $t ./poisson $k $rhsType 1 0
+mpiexec_mpt -np $P omplace -nt $t -vv ./poisson $k $rhsType 1 0

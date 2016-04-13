@@ -16,7 +16,7 @@ for P in 1 2 4 8 16 32; do
 	printf "$tempString" >> $filename
 	for k in `seq $k_start $k_end`; do
 #mpiexec -np $P ./build/poisson $k $rhsType 0 0 > temp.txt
-		mpiexec_mpt -np $P omplace -nt $t ./build/poisson $k $rhsType 0 0 > temp.txt
+		mpiexec_mpt -np $P omplace -nt $t -vv ./build/poisson $k $rhsType 0 0 > temp.txt
 
 		tempString="$(sed -n 1,1p temp.txt)"
 		tempString=" ${tempString##* }"
