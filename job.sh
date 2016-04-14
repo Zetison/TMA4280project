@@ -20,7 +20,7 @@ P=36
 for t in 4 8; do
 	for k in `seq $k_start $k_end`; do
 		printf "t = "$t", k = "$k"\n"
-		mpiexec_mpt -np $P omplace -nt $t -vv./build/poisson $k $rhsType 0 1 
+		mpiexec_mpt -np $P omplace -nt $t -vv ./build/poisson $k $rhsType 0 1 
 	done
 done
 

@@ -1,0 +1,241 @@
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n17.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n17.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n17.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n17.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n17.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT: Launch error on r3i1n16.vilje.hpc.ntnu.no
+MPT ERROR: could not run executable
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    1
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    2
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    4
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    8
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    1
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    1
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    2
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    2
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    4
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    4
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    8
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    8
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    1
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    1
+    4	    4	    0	yes	 r3i3n8      	    0
+    5	    5	    1	yes	 r3i3n8      	    1
+    6	    6	    0	yes	 r3i3n17     	    0
+    7	    7	    1	yes	 r3i3n17     	    1
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    2
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    2
+    4	    4	    0	yes	 r3i3n8      	    0
+    5	    5	    1	yes	 r3i3n8      	    2
+    6	    6	    0	yes	 r3i3n17     	    0
+    7	    7	    1	yes	 r3i3n17     	    2
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    4
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    4
+    4	    4	    0	yes	 r3i3n8      	    0
+    5	    5	    1	yes	 r3i3n8      	    4
+    6	    6	    0	yes	 r3i3n17     	    0
+    7	    7	    1	yes	 r3i3n17     	    4
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    8
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    8
+    4	    4	    0	yes	 r3i3n8      	    0
+    5	    5	    1	yes	 r3i3n8      	    8
+    6	    6	    0	yes	 r3i3n17     	    0
+    7	    7	    1	yes	 r3i3n17     	    8
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    1
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    1
+    4	    4	    0	yes	 r3i3n8      	    0
+    5	    5	    1	yes	 r3i3n8      	    1
+    6	    6	    0	yes	 r3i3n17     	    0
+    7	    7	    1	yes	 r3i3n17     	    1
+    8	    8	    0	yes	 r3i7n0      	    0
+    9	    9	    1	yes	 r3i7n0      	    1
+   10	   10	    0	yes	 r3i7n1      	    0
+   11	   11	    1	yes	 r3i7n1      	    1
+   12	   12	    0	yes	 r6i0n10     	    0
+   13	   13	    1	yes	 r6i0n10     	    1
+   14	   14	    0	yes	 r6i1n16     	    0
+   15	   15	    1	yes	 r6i1n16     	    1
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    2
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    2
+    4	    4	    0	yes	 r3i3n8      	    0
+    5	    5	    1	yes	 r3i3n8      	    2
+    6	    6	    0	yes	 r3i3n17     	    0
+    7	    7	    1	yes	 r3i3n17     	    2
+    8	    8	    0	yes	 r3i7n0      	    0
+    9	    9	    1	yes	 r3i7n0      	    2
+   10	   10	    0	yes	 r3i7n1      	    0
+   11	   11	    1	yes	 r3i7n1      	    2
+   12	   12	    0	yes	 r6i0n10     	    0
+   13	   13	    1	yes	 r6i0n10     	    2
+   14	   14	    0	yes	 r6i1n16     	    0
+   15	   15	    1	yes	 r6i1n16     	    2
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    4
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    4
+    4	    4	    0	yes	 r3i3n8      	    0
+    5	    5	    1	yes	 r3i3n8      	    4
+    6	    6	    0	yes	 r3i3n17     	    0
+    7	    7	    1	yes	 r3i3n17     	    4
+    8	    8	    0	yes	 r3i7n0      	    0
+    9	    9	    1	yes	 r3i7n0      	    4
+   10	   10	    0	yes	 r3i7n1      	    0
+   11	   11	    1	yes	 r3i7n1      	    4
+   12	   12	    0	yes	 r6i0n10     	    0
+   13	   13	    1	yes	 r6i0n10     	    4
+   14	   14	    0	yes	 r6i1n16     	    0
+   15	   15	    1	yes	 r6i1n16     	    4
+MPT DSM information
+MPT using dplace
+wrank	grank	lrank	pinning	 node name   	cpuid
+    0	    0	    0	yes	 r3i1n16     	    0
+    1	    1	    1	yes	 r3i1n16     	    8
+    2	    2	    0	yes	 r3i1n17     	    0
+    3	    3	    1	yes	 r3i1n17     	    8
+    4	    4	    0	yes	 r3i3n8      	    0
+    5	    5	    1	yes	 r3i3n8      	    8
+    6	    6	    0	yes	 r3i3n17     	    0
+    7	    7	    1	yes	 r3i3n17     	    8
+    8	    8	    0	yes	 r3i7n0      	    0
+    9	    9	    1	yes	 r3i7n0      	    8
+   10	   10	    0	yes	 r3i7n1      	    0
+   11	   11	    1	yes	 r3i7n1      	    8
+   12	   12	    0	yes	 r6i0n10     	    0
+   13	   13	    1	yes	 r6i0n10     	    8
+   14	   14	    0	yes	 r6i1n16     	    0
+   15	   15	    1	yes	 r6i1n16     	    8
+=>> PBS: job killed: walltime 996 exceeded limit 900
