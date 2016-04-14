@@ -21,7 +21,7 @@
 #define true 1
 #define false 0
 typedef int bool;
-enum rhsTypes {RHS_TYPE_POLYNOMIAL, RHS_TYPE_SINE, RHS_TYPE_CONST, RHS_TYPE_POINTSOURCES};
+enum rhsTypes {RHS_TYPE_POLYNOMIAL, RHS_TYPE_SINE, RHS_TYPE_CONST, RHS_TYPE_POINTSOURCES, RHS_TYPE_SINCOS};
 
 // Function prototypes
 double *mk_1D_array(int n);
@@ -31,7 +31,7 @@ int loc_to_glob(int i, int rank, int m, int nprocs);
 double rhs(double x, double y, int rhsType, int n);
 double exact_solution(double x, double y, int rhsType);
 void transpose(double **A, double **At, int np, int m, int nprocs, double *recvbuf, double *sendbuf, int *sendcounts, int *sdispls, int *np_arr);
-double compute_max_relative_error(double **b, int rank, int m, int np, int nprocs, double *grid, int rhsType);
+double compute_max_relative_error(double **b, int rank, int m, int np, int nprocs, double *grid_x, double *grid_y, int rhsType);
 void print_matrix_to_file(double **A, int np, int m, int rank, int nprocs, int rhsType);
 void fft(double complex *z, int m);
 void fast_sine(double *v, int n, double complex *z, bool inverse);
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 			printf("  ./poisson k, rhsType, postProcessing, computeError\n\n");
 			printf("Arguments:\n");
 			printf("  k: the problem size n=2^k\n");
-			printf("  rhsType: choose from 0 to 3\n");
+			printf("  rhsType: choose from 0 to 4\n");
 			printf("  postProcessing: 0 or 1\n");
 			printf("  computeError: 0 or 1\n\n");
 		}
@@ -72,46 +72,27 @@ int main(int argc, char **argv) {
 	int n = 1 << atoi(argv[1]);
 
 	int m = n - 1;
-	double h = 1.0 / n;
 	
 	int offset = m%nprocs; // number of elements left over after evenly distribution
 	int np = m/nprocs + (offset > rank ? 1 : 0);
 	int tag = 1;
-	
+
+	double L_x, L_y;
+	if (rhsType == RHS_TYPE_SINCOS) {
+		L_x = 2.3;
+		L_y = 0.78;
+	} else {
+		L_x = 1.0;
+		L_y = 1.0;
+	}
+
+	double h_x = L_x/n;
+	double h_y = L_y/n;
+	double gamma2 = h_y*h_y/h_x/h_x;
 	double **b_p = mk_2D_array(np, m);
 	double **bt_p = mk_2D_array(np, m);
 	
-	int t;
-	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < 1; i++)
-		t = omp_get_num_threads();
-
-	double complex **z = mk_2D_array_complex(t, 2*n);
-
-	// Grid points
-	double *grid = mk_1D_array(n+1);
-	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < n+1; i++)
-		grid[i] = i * h;
-
-	// The diagonal of the eigenvalue matrix of T
-	double *diag = mk_1D_array(m);
-	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < m; i++)
-		diag[i] = 2.0 * (1.0 - cos((i+1) * PI / n));
-	
-	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < np; i++) {
-		int i_glob = loc_to_glob(i, rank, m, nprocs);
-		for (int j = 0; j < m; j++)
-			b_p[i][j] = h * h * rhs(grid[i_glob+1], grid[j+1], rhsType, n);
-	}
-
-	// Calculate Btilde^T = S^-1 * (S * B)^T
-	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < np; i++)
-		fst(b_p[i], n, z[omp_get_thread_num()]);
-	
+	// Initialize arrays for the transpose operation
 	double *recvbuf = mk_1D_array(np*m);
 	double *sendbuf = mk_1D_array(np*m);
 	int *sendcounts = (int *)malloc(nprocs * sizeof(int));
@@ -127,18 +108,69 @@ int main(int argc, char **argv) {
 		displs += np_k*np;
 	}
 
+
+	int t; // number of threads
+	#pragma omp parallel for schedule(static)
+	for (int i = 0; i < 1; i++)
+		t = omp_get_num_threads();
+
+	double complex **z = mk_2D_array_complex(t, 2*n);
+
+	// Grid points
+	double *grid_x = mk_1D_array(n+1);
+	double *grid_y = mk_1D_array(n+1);
+
+	#pragma omp parallel for schedule(static)
+	for (int i = 0; i < n+1; i++)
+		grid_x[i] = i * h_x;
+
+	#pragma omp parallel for schedule(static)
+	for (int i = 0; i < n+1; i++)
+		grid_y[i] = i * h_y;
+
+	// The diagonal of the eigenvalue matrix of T
+	double *diag = mk_1D_array(m);
+	#pragma omp parallel for schedule(static)
+	for (int i = 0; i < m; i++)
+		diag[i] = 2*(1 - cos((i+1)*PI/n));
+	
+	#pragma omp parallel for schedule(static)
+	for (int i = 0; i < np; i++) {
+		int i_glob = loc_to_glob(i, rank, m, nprocs);
+		for (int j = 0; j < m; j++){
+			double x = grid_x[i_glob+1];
+			double y = grid_y[j+1];
+			b_p[i][j] = h_y*h_y*rhs(x, y, rhsType, n);
+
+			// Accounting for inhomogeneous Dirichlet boundary conditions
+			if(i_glob == 0)
+				b_p[i][j] += gamma2*exact_solution(0,y,rhsType);
+			if(i_glob == m-1)
+				b_p[i][j] += gamma2*exact_solution(L_x,y,rhsType);
+			if(j == 0)
+				b_p[i][j] += exact_solution(x,0,rhsType);
+			if(j == m-1)
+				b_p[i][j] += exact_solution(x,L_y,rhsType);
+		}
+	}
+
+	// Calculate Btilde^T = S^-1 * (S * B)^T
+	#pragma omp parallel for schedule(static)
+	for (int i = 0; i < np; i++)
+		fst(b_p[i], n, z[omp_get_thread_num()]);
+
 	transpose(b_p, bt_p, np, m, nprocs, recvbuf, sendbuf, sendcounts, sdispls, np_arr);
 
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < np; i++)
 		fstinv(bt_p[i], n, z[omp_get_thread_num()]);
 
-	// solve Lambda * Utilde = Btilde
+	// solve Lambda * Utilde = Btilde. Note that bt_p = Btilde^T at this point
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < np; i++) {
 		int i_glob = loc_to_glob(i, rank, m, nprocs);
 		for (int j = 0; j < m; j++)
-			bt_p[i][j] = bt_p[i][j] / (diag[i_glob] + diag[j]);
+			bt_p[i][j] = bt_p[i][j]/(gamma2*diag[j] + diag[i_glob]);
 	}
 
 	// Calculate U = S^-1 * (S * Utilde)^T
@@ -163,10 +195,10 @@ int main(int argc, char **argv) {
 		print_matrix_to_file(b_p, np, m, rank, nprocs, rhsType);
 
 	if (computeError) {
-		double maxRelativeError = compute_max_relative_error(b_p, rank, m, np, nprocs, grid, rhsType);
+		double maxRelativeError = compute_max_relative_error(b_p, rank, m, np, nprocs, grid_x, grid_y, rhsType);
 		if (rank == 0) {
 			printf("\n%21s%21s\n", "h", "maxRelativeError");
-			printf("%21.17f%21.17f\n", h, maxRelativeError);
+			printf("%21.17f%21.17f\n", h_x > h_y ? h_x : h_y , maxRelativeError);
 		}
 	}
 	
@@ -218,7 +250,9 @@ double rhs(double x, double y, int rhsType, int n) {
 			return -2*n*n;
 		else
 			return 0.0;
-	} else
+	} else if (rhsType == RHS_TYPE_SINCOS)
+		return 125*sin(10*x)*cos(5*y);
+	else
 		exit(EXIT_FAILURE);
 		
 }
@@ -262,7 +296,9 @@ double exact_solution(double x, double y, int rhsType) {
 			}
 		}
 		return u;
-	} else
+	} else if (rhsType == RHS_TYPE_SINCOS)
+		return sin(10*x)*cos(5*y);
+	else
 		exit(EXIT_FAILURE);
 }
 
@@ -289,14 +325,14 @@ void transpose(double **A, double **At, int np, int m, int nprocs, double *recvb
 	}
 }
 
-double compute_max_relative_error(double **b, int rank, int m, int np, int nprocs, double *grid, int rhsType) {
+double compute_max_relative_error(double **b, int rank, int m, int np, int nprocs, double *grid_x, double *grid_y, int rhsType) {
 	double max_u = -1;
 	double max_error = -1;
 
 	for (int i = 0; i < np; i++) {
 		int i_glob = loc_to_glob(i, rank, m, nprocs);
 		for (int j = 0; j < m; j++) {
-			double u = exact_solution(grid[i_glob+1], grid[j+1], rhsType);
+			double u = exact_solution(grid_x[i_glob+1], grid_y[j+1], rhsType);
 			if (max_u < fabs(u))
 				max_u = fabs(u);
 			double error;
