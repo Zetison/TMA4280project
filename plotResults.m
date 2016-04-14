@@ -15,7 +15,7 @@ for file = files'
     X = X';
     Y = Y';
     figure(counter)
-    surf(X,Y,padarray(data,[1 1]),'EdgeColor','none','LineStyle','none')
+    surf(X,Y,padarray(data.',[1 1]),'EdgeColor','none','LineStyle','none')
     
     j = jet;
     colormap(jet)

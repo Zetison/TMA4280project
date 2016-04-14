@@ -125,8 +125,8 @@ int main(int argc, char **argv) {
 		grid_x[i] = i * h_x;
 
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < n+1; i++)
-		grid_y[i] = i * h_y;
+	for (int j = 0; j < n+1; j++)
+		grid_y[j] = j * h_y;
 
 	// The diagonal of the eigenvalue matrix of T
 	double *diag = mk_1D_array(m);
@@ -135,54 +135,60 @@ int main(int argc, char **argv) {
 		diag[i] = 2*(1 - cos((i+1)*PI/n));
 	
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < np; i++) {
-		int i_glob = loc_to_glob(i, rank, m, nprocs);
-		for (int j = 0; j < m; j++){
-			double x = grid_x[i_glob+1];
-			double y = grid_y[j+1];
-			b_p[i][j] = h_y*h_y*rhs(x, y, rhsType, n);
-
-			// Accounting for inhomogeneous Dirichlet boundary conditions
-			if(i_glob == 0)
-				b_p[i][j] += gamma2*exact_solution(0,y,rhsType);
-			if(i_glob == m-1)
-				b_p[i][j] += gamma2*exact_solution(L_x,y,rhsType);
-			if(j == 0)
-				b_p[i][j] += exact_solution(x,0,rhsType);
-			if(j == m-1)
-				b_p[i][j] += exact_solution(x,L_y,rhsType);
+	for (int j = 0; j < np; j++) {
+		int j_glob = loc_to_glob(j, rank, m, nprocs);
+		for (int i = 0; i < m; i++){
+			double x = grid_x[i+1];
+			double y = grid_y[j_glob+1];
+			b_p[j][i] = h_y*h_y*rhs(x, y, rhsType, n);
+			
+			if(rhsType == RHS_TYPE_SINCOS){
+				// Accounting for inhomogeneous Dirichlet boundary conditions
+				if(j_glob == 0)
+					b_p[j][i] += gamma2*exact_solution(0,y,rhsType);
+				if(j_glob == m-1)
+					b_p[j][i] += gamma2*exact_solution(L_x,y,rhsType);
+				if(i == 0)
+					b_p[j][i] += exact_solution(x,0,rhsType);
+				if(i == m-1)
+					b_p[j][i] += exact_solution(x,L_y,rhsType);
+			}
 		}
 	}
 
-	// Calculate Btilde^T = S^-1 * (S * B)^T
+	// Calculate Btilde^T*n^2/2 = S^-1 * (S^-1 * B)^T
+	// At this point b_p = B
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < np; i++)
-		fst(b_p[i], n, z[omp_get_thread_num()]);
+	for (int j = 0; j < np; j++)
+		fstinv(b_p[j], n, z[omp_get_thread_num()]);
 
 	transpose(b_p, bt_p, np, m, nprocs, recvbuf, sendbuf, sendcounts, sdispls, np_arr);
-
+	// At this point bt_p = (S^-1 B)^T
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < np; i++)
-		fstinv(bt_p[i], n, z[omp_get_thread_num()]);
+	for (int j = 0; j < np; j++)
+		fstinv(bt_p[j], n, z[omp_get_thread_num()]);
 
-	// solve Lambda * Utilde = Btilde. Note that bt_p = Btilde^T at this point
+	// solve Lambda * Utilde = Btilde
+	// At this point bt_p = Btilde^T * n^2/2
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < np; i++) {
-		int i_glob = loc_to_glob(i, rank, m, nprocs);
-		for (int j = 0; j < m; j++)
-			bt_p[i][j] = bt_p[i][j]/(gamma2*diag[j] + diag[i_glob]);
+	for (int j = 0; j < np; j++) {
+		int j_glob = loc_to_glob(j, rank, m, nprocs);
+		for (int i = 0; i < m; i++)
+			bt_p[j][i] = bt_p[j][i]/(gamma2*diag[j_glob] + diag[i]);
 	}
 
-	// Calculate U = S^-1 * (S * Utilde)^T
+	// Calculate U = S * (S * n^2/2 * Utilde^T)^T
+	// At this point bt_p = Utilde^T * n^2/2
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < np; i++)
-		fst(bt_p[i], n, z[omp_get_thread_num()]);
+	for (int j = 0; j < np; j++)
+		fst(bt_p[j], n, z[omp_get_thread_num()]);
 
 	transpose(bt_p, b_p, np, m, nprocs, recvbuf, sendbuf, sendcounts, sdispls, np_arr);
-
+	
+	// At this point b_p = Utilde * n^2/2 *S^T = Utilde * S^-1
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < np; i++)
-		fstinv(b_p[i], n, z[omp_get_thread_num()]);
+	for (int j = 0; j < np; j++)
+		fst(b_p[j], n, z[omp_get_thread_num()]);
 
 	
 	end_time = MPI_Wtime();
@@ -216,8 +222,8 @@ double **mk_2D_array(int n1, int n2) {
 	
 	ret[0] = (double *)malloc(n1 * n2 * sizeof(double));
 
-	for (int i = 1; i < n1; i++)
-		ret[i] = ret[i-1] + n2;
+	for (int j = 1; j < n1; j++)
+		ret[j] = ret[j-1] + n2;
 	return ret;
 }
 
@@ -226,14 +232,14 @@ double complex **mk_2D_array_complex(int n1, int n2) {
 	
 	ret[0] = (double complex*)malloc(n1 * n2 * sizeof(double complex));
    
-	for (int i = 1; i < n1; i++)
-		ret[i] = ret[i-1] + n2;
+	for (int j = 1; j < n1; j++)
+		ret[j] = ret[j-1] + n2;
 	return ret;
 }
 
-int loc_to_glob(int i, int rank, int m, int nprocs) {
+int loc_to_glob(int j, int rank, int m, int nprocs) {
 	int offset = m%nprocs;
-	return rank*(m/nprocs) + (offset > rank ? rank : offset) + i;
+	return rank*(m/nprocs) + (offset > rank ? rank : offset) + j;
 }
 
 double rhs(double x, double y, int rhsType, int n) {
@@ -254,7 +260,7 @@ double rhs(double x, double y, int rhsType, int n) {
 		return 125*sin(10*x)*cos(5*y);
 	else
 		exit(EXIT_FAILURE);
-		
+	return 2 * (y - y*y + x - x*x);
 }
 
 double exact_solution(double x, double y, int rhsType) {
@@ -308,19 +314,19 @@ void transpose(double **A, double **At, int np, int m, int nprocs, double *recvb
 	int counter = 0;
 	for (int k = 0; k < nprocs; k++) {
 		int np_k = np_arr[k];
-		for (int i = 0; i < np; i++)
-			for (int j = 0; j < np_k; j++)
-				sendbuf[counter++] = A[i][loc_to_glob(j, k, m, nprocs)];
+		for (int j = 0; j < np; j++)
+			for (int i = 0; i < np_k; i++)
+				sendbuf[counter++] = A[j][loc_to_glob(i, k, m, nprocs)];
 	}
 	MPI_Alltoallv(sendbuf, sendcounts, sdispls,  MPI_DOUBLE, recvbuf, sendcounts, sdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 	
 	counter = 0;
 	for (int k = 0; k < nprocs; k++) {
 		int np_k = np_arr[k];
-		for (int j = 0; j < np_k; j++){
-			int j_glob = loc_to_glob(j, k, m, nprocs);
-			for (int i = 0; i < np; i++)
-				At[i][j_glob] = recvbuf[counter++];
+		for (int i = 0; i < np_k; i++){
+			int i_glob = loc_to_glob(i, k, m, nprocs);
+			for (int j = 0; j < np; j++)
+				At[j][i_glob] = recvbuf[counter++];
 		}
 	}
 }
@@ -329,17 +335,17 @@ double compute_max_relative_error(double **b, int rank, int m, int np, int nproc
 	double max_u = -1;
 	double max_error = -1;
 
-	for (int i = 0; i < np; i++) {
-		int i_glob = loc_to_glob(i, rank, m, nprocs);
-		for (int j = 0; j < m; j++) {
-			double u = exact_solution(grid_x[i_glob+1], grid_y[j+1], rhsType);
+	for (int j = 0; j < np; j++) {
+		int j_glob = loc_to_glob(j, rank, m, nprocs);
+		for (int i = 0; i < m; i++) {
+			double u = exact_solution(grid_x[i+1], grid_y[j_glob+1], rhsType);
 			if (max_u < fabs(u))
 				max_u = fabs(u);
 			double error;
 			if (isnan(u))
 				error = 0;
 			else
-				error = fabs(u-b[i][j]);
+				error = fabs(u-b[j][i]);
 			if (max_error < error)
 				max_error = error;
 		}
@@ -353,9 +359,9 @@ double compute_max_relative_error(double **b, int rank, int m, int np, int nproc
 }
 
 void print_matrix(double *A, int np, int m, FILE *fp) {
-	for (int i = 0; i < np; i++) {
-		for (int j = 0; j < m; j++)
-			fprintf(fp, "%20.15g ", A[i*m+j]);
+	for (int j = 0; j < np; j++) {
+		for (int i = 0; i < m; i++)
+			fprintf(fp, "%20.15g ", A[i+j*m]);
 		fprintf(fp, "\n");
 	}
 }

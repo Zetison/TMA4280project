@@ -1,1 +1,1 @@
-/sw/sgi/mpt/mpt-2.06/bin/mpicc  -std=c99  -openmp -O3 -DNDEBUG   CMakeFiles/poisson.dir/poisson.c.o  -o poisson -rdynamic -lm 
+/usr/bin/mpicc  -std=c99  -fopenmp -O3 -DNDEBUG    CMakeFiles/poisson.dir/poisson.c.o  -o poisson -rdynamic -lm -lmpi -ldl -lhwloc 
