@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ntnu/jonvegar/TMA4280project/poisson.c
+stdlib.h
+-
+stdio.h
+-
+math.h
+-
+complex.h
+-
+mpi.h
+-
+omp.h
+-
+
