@@ -156,20 +156,21 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	// Calculate Btilde^T*n^2/2 = S^-1 * (S^-1 * B)^T
+	// Calculate Btilde^T = S^-1 * (S * B)^T
 	// At this point b_p = B
 	#pragma omp parallel for schedule(static)
 	for (int j = 0; j < np; j++)
-		fstinv(b_p[j], n, z[omp_get_thread_num()]);
+		fst(b_p[j], n, z[omp_get_thread_num()]);
 
 	transpose(b_p, bt_p, np, m, nprocs, recvbuf, sendbuf, sendcounts, sdispls, np_arr);
-	// At this point bt_p = (S^-1 B)^T
+
+	// At this point bt_p = (S B)^T
 	#pragma omp parallel for schedule(static)
 	for (int j = 0; j < np; j++)
 		fstinv(bt_p[j], n, z[omp_get_thread_num()]);
 
-	// solve Lambda * Utilde = Btilde
-	// At this point bt_p = Btilde^T * n^2/2
+	// solve gamma^2*Lambda * Utilde + Utilde * Lambda = Btilde
+	// At this point bt_p = Btilde^T
 	#pragma omp parallel for schedule(static)
 	for (int j = 0; j < np; j++) {
 		int j_glob = loc_to_glob(j, rank, m, nprocs);
@@ -177,19 +178,18 @@ int main(int argc, char **argv) {
 			bt_p[j][i] = bt_p[j][i]/(gamma2*diag[j_glob] + diag[i]);
 	}
 
-	// Calculate U = S * (S * n^2/2 * Utilde^T)^T
-	// At this point bt_p = Utilde^T * n^2/2
+	// Calculate U = S^-1 * (S * Utilde^T)^T
+	// At this point bt_p = Utilde^T
 	#pragma omp parallel for schedule(static)
 	for (int j = 0; j < np; j++)
 		fst(bt_p[j], n, z[omp_get_thread_num()]);
 
 	transpose(bt_p, b_p, np, m, nprocs, recvbuf, sendbuf, sendcounts, sdispls, np_arr);
 	
-	// At this point b_p = Utilde * n^2/2 *S^T = Utilde * S^-1
+	// At this point b_p = (S * Utilde^T)^T
 	#pragma omp parallel for schedule(static)
 	for (int j = 0; j < np; j++)
-		fst(b_p[j], n, z[omp_get_thread_num()]);
-
+		fstinv(b_p[j], n, z[omp_get_thread_num()]);
 	
 	end_time = MPI_Wtime();
 	total_time = end_time-start_time;

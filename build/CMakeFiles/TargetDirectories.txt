@@ -1,1 +1,1 @@
-/home/shomec/j/jonvegar/Dropbox/GitHub/TMA4280project/build/CMakeFiles/poisson.dir
+/home/ntnu/jonvegar/TMA4280project/build/CMakeFiles/poisson.dir
