@@ -1,1 +1,0 @@
-/home/ntnu/jonvegar/TMA4280project/build/CMakeFiles/poisson.dir

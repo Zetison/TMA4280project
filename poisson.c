@@ -260,7 +260,6 @@ double rhs(double x, double y, int rhsType, int n) {
 		return 125*sin(10*x)*cos(5*y);
 	else
 		exit(EXIT_FAILURE);
-	return 2 * (y - y*y + x - x*x);
 }
 
 double exact_solution(double x, double y, int rhsType) {
@@ -272,18 +271,18 @@ double exact_solution(double x, double y, int rhsType) {
 		if (rhsType == RHS_TYPE_POINTSOURCES && ((x == 0.5 && y == 0.5) || (x == 0.75 && y == 0.75) || (x == 0.25 && y == 0.5)))
 			return NAN;
 
-		double ratio, u = 0;
+		double u = 0;
 		#pragma omp parallel for reduction(+:u) 
 		for (int N = 0; N < 1000; N++) {
-			double maxTerm = 0, a_mn;
+			double a_mn;
 			int n = N;
 			for (int m = 0; m <= N; m++) {
 				double fact_x, fact_y;
-				if (rhsType == 3) {
+				if (rhsType == RHS_TYPE_CONST) {
 					fact_x = (2*m+1)*PI;
-				fact_y = (2*n+1)*PI;
+					fact_y = (2*n+1)*PI;
 					a_mn = 4/PI/PI/(4*m*n+2*m+2*n+1);
-				} else if (rhsType == 4) {
+				} else if (rhsType == RHS_TYPE_POINTSOURCES) {
 					fact_x = (m+1)*PI;
 					fact_y = (n+1)*PI;
 					double Q[3] = {1, 1, -2};
@@ -296,7 +295,6 @@ double exact_solution(double x, double y, int rhsType) {
 				}
 				a_mn *= 4/(fact_x*fact_x+fact_y*fact_y);
 				double uTerm = a_mn*sin(fact_x*x)*sin(fact_y*y);
-
 				u += uTerm;
 			n--;
 			}
