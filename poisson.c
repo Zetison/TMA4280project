@@ -250,9 +250,9 @@ double rhs(double x, double y, int rhsType, int n) {
 	else if (rhsType == RHS_TYPE_CONST)
 		return 1.0;
 	else if (rhsType == RHS_TYPE_POINTSOURCES){
-		if (x == 0.5 && y == 0.5 || x == 0.75 && y == 0.75)
+		if (x == 0.5 && y == 0.25 || x == 0.75 && y == 0.75)
 			return n*n;
-		else if (x == 0.25 && y == 0.5)
+		else if (x == 0.25 && y == 0.75)
 			return -2*n*n;
 		else
 			return 0.0;
@@ -286,9 +286,9 @@ double exact_solution(double x, double y, int rhsType) {
 					fact_x = (m+1)*PI;
 					fact_y = (n+1)*PI;
 					double Q[3] = {1, 1, -2};
-					double pts[3][2] = {{0.5, 0.5},
+					double pts[3][2] = {{0.5, 0.25},
 							    {0.75, 0.75},
-							    {0.25, 0.5}};
+							    {0.25, 0.75}};
 					a_mn = 0;
 					for (int i = 0; i < 3; i++)
 						a_mn += Q[i]*sin(fact_x*pts[i][0])*sin(fact_y*pts[i][1]);
